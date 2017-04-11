@@ -14,8 +14,12 @@ def main():
     
     if args.input:
         generate_data(args.input, args.FILE)
+    else:
+        generate_comment(args.FILE)
 
-    generate_comment(args.FILE)
+
+def generate_comment(input):
+    pass
 
 
 # Generates the Markov chain data based on JSON formatted chat history from the input file
