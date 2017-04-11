@@ -1,5 +1,5 @@
 # TelegramMarkov
-This program generates comments with a Markov chain. Telegram chat history is used as input.
+This program generates comments using a Markov chain. Telegram chat history is used as input.
 
 ## Requirements
 First off, you need some Telegram chat history in JSON format. You can dump chat history from a group you're a member in with https://github.com/tvdstaaij/telegram-history-dump or your tool of choice.
