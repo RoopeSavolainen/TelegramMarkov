@@ -31,6 +31,9 @@ def generate_data(input, output):
         # This will hold the current -> next state probabilities
         probs = {}
 
+        # Entry points for comments
+        begin = []
+
         for line in infile.readlines():
             data = json.loads(line)
 
@@ -49,8 +52,12 @@ def generate_data(input, output):
                 else:
                     probs[key] = [value]
 
+            if len(words) > history_len:
+                begin.append(tuple(words[:history_len]))
+
         infile.close()
-        pickle.dump(probs, outfile)
+        dump = {'probs' : probs, 'begin' : begin}
+        pickle.dump(dump, outfile)
         outfile.close()
 
     except Exception as err:
@@ -62,10 +69,11 @@ def generate_data(input, output):
 def gen_trigram(words, history):
     if len(words) < history+1:
         return
-    for i in range(len(words) - history):
-        t = ()
-        for j in range(history+1):
-            t += (words[i+j],)
+    for i in range(len(words) - history + 1):
+        if i == len(words) - history:
+            t = tuple(words[i:i+history])+(0,)
+        else:
+            t = tuple(words[i:i+history+1])
         yield t
 
 
