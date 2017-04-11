@@ -4,10 +4,11 @@ import argparse
 import sys
 import json
 import pickle
+import random
 
 # Defines how many preceding words we use to predict the next one
-# We use 2 previous words since it gives a pretty good result
-history_len = 2 
+# With really large datasets you might wanna increase this to create syntatically better results
+history_len = 1 
 
 def main():
     args = parse_arguments()
@@ -15,11 +16,33 @@ def main():
     if args.input:
         generate_data(args.input, args.FILE)
     else:
-        generate_comment(args.FILE)
+        print(generate_comment(args.FILE))
 
 
 def generate_comment(input):
-    pass
+    try:
+        infile = open(input, 'rb')
+        data = pickle.load(infile)
+
+        probs = data['probs']
+        begin = data['begin']
+
+        comment = []
+
+        prev = random.choice(begin)
+
+        for i in range(len(prev) - 1):
+            comment.append(prev[i])
+
+        while prev[-1] != 0:
+            comment.append(prev[-1])
+            new = random.choice(probs[prev])
+            prev = prev[1:] + (new,)
+
+        return ' '.join(comment)
+    except Exception as err:
+        sys.stderr.write(str(err)+'\n')
+        sys.exit(1)
 
 
 # Generates the Markov chain data based on JSON formatted chat history from the input file
@@ -37,7 +60,7 @@ def generate_data(input, output):
         for line in infile.readlines():
             data = json.loads(line)
 
-            # We exclude media messages, system messages, bot commands and forwards
+            # We exclude media messages, system messages, bot commands and forwarded msgs
             if data['event'] != 'message' or 'media' in data or data['text'][0] == '/' or 'fwd_from' in data:
                 continue
 
@@ -71,6 +94,7 @@ def gen_trigram(words, history):
         return
     for i in range(len(words) - history + 1):
         if i == len(words) - history:
+            # 0 marks the end of a comment
             t = tuple(words[i:i+history])+(0,)
         else:
             t = tuple(words[i:i+history+1])
